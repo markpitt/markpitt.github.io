@@ -149,8 +149,18 @@
   outline-offset: 2px;
 }
 
-/* #44: the hamburger nav collapse. 586px matches tests/e2e/hamburger-nav.spec.ts's
-   COLLAPSE_WIDTH: the width below which the nav's one-row link form starts wrapping. This
+/* #44: the hamburger nav collapse. 647px matches tests/e2e/hamburger-nav.spec.ts's
+   COLLAPSE_WIDTH: the width below which the nav's one-row link form starts wrapping.
+
+   26/11/2026: 647, up from 586, when the Skills link (markpitt.dev/claude-skills) joined the
+   nav. Measured with the self-hosted fonts settled, the links forced into one row: the header
+   holds its 67px height at 647px and wraps at 646px on Playwright 1.63.0's chromium-1243. The
+   browser the locked Playwright (1.62.1, chromium-1234) launches fits one row from 643px, so
+   647 is the worst case across the two builds, and self-hosted-fonts.spec.ts allows a 4px
+   margin above its own measurement for exactly that reason (see its ENGINE_MARGIN_PX). The
+   claude-skills pages share this header, measure the same under each build, and carry the same
+   647px in claude-skills/site/style.css; move all three together.
+   The history below records how the earlier 586 was reached. This
    constant and docs/specs/hamburger-nav.md's criterion 3 (re-measured across the width range on
    every change to nav text metrics, e.g. #41's self-hosted fonts or #39's inline siblings) are
    two halves of one invariant. Whoever adjusts either has to update the other; this comment is
@@ -251,11 +261,11 @@
    query and .nav-menu-toggle's unconditioned display: inline-flex rule are equal specificity
    (0,0,1,0 each), a media query contributes none of its own, and CSS breaks the tie by source
    order. Declared above the unconditioned rule, "display: none" lost every time regardless of
-   viewport width, so the hamburger stayed visible at and above 586px. Declaring this block
+   viewport width, so the hamburger stayed visible at and above 647px. Declaring this block
    below fixes it by source order alone; .nav-menu-links's !important below stays justified on
    its own terms (0,0,3,0 vs 0,0,1,0 against .nav-menu[open] .nav-menu-links, a genuine
    specificity win), so moving this block changes nothing about that rule. */
-@media (min-width: 586px) {
+@media (min-width: 647px) {
   /* Criterion 2: the hamburger is never visible at or above the collapse width. */
   .nav-menu-toggle {
     display: none;
@@ -264,7 +274,7 @@
   /* Forced visible regardless of [open], overriding the collapsed-state rules above: this is
      the fix for the <details> trap described there. The overlay positioning above is a narrow-
      width-only concern, so it is reset here too -- without this, the always-visible one-row
-     form above 586px would inherit position:absolute from the [open] rule and detach from the
+     form above 647px would inherit position:absolute from the [open] rule and detach from the
      nav bar's flow instead of sitting in it. */
   .nav-menu-links {
     display: flex !important;
@@ -282,7 +292,7 @@
      cannot defeat, !important or not -- so above, .nav-menu-links laid out and painted while
      still reading as hidden to checkVisibility() and to Playwright's own actionability engine.
      This rule defeats that at the only place it needs defeating: scoped inside this media query,
-     so a closed disclosure below 586px is untouched and still hides its content correctly.
+     so a closed disclosure below 647px is untouched and still hides its content correctly.
      display: flex !important above is left in place; it may be what the fallback needs on
      engines without ::details-content, see docs/design/hamburger-nav.md. */
   .nav-menu::details-content {
