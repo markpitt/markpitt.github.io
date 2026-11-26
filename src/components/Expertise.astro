@@ -1,0 +1,49 @@
+---
+const domains = [
+  {
+    label: '.NET Platform',
+    title: 'Backend & Full-Stack .NET',
+    description:
+      'Every version of .NET since 1.0 in 2002, across desktop, web, mobile, and cloud. Architect-level knowledge of the runtime, DI, async patterns, and cross-platform deployment. Comfortable from low-level protocol work to Blazor WASM front-ends.',
+    tech: ['C# / .NET 10', 'Blazor / WASM', 'Azure Functions', '.NET Aspire', 'Worker Services', 'WebAPI / SignalR', 'EF Core', 'MVVM / PRISM', 'Avalonia / MAUI'],
+  },
+  {
+    label: 'AI & Agents',
+    title: 'AI Agent Systems & Local Inference',
+    description:
+      'Building production AI tooling: MCP servers, multi-agent orchestrators, and local inference pipelines. Implemented the Stanford ACE context engineering paper in .NET 10. Run a local inference stack (RTX 3090, llama-swap, Qwen3/Devstral) for daily development.',
+    tech: ['Claude API / MCP', 'Multi-agent orchestration', 'Ollama / llama-swap', 'Local LLM inference', 'LiteLLM gateway', 'Python / FastAPI', 'RAG pipelines', 'Fine-tuning / QLoRA', 'GitHub Agentic Workflows'],
+  },
+  {
+    label: 'Identity & Auth',
+    title: 'Identity Infrastructure',
+    description:
+      'Delivered Duende IdentityServer build-outs for organisations securing their own applications, drawing on specialist-level knowledge of identity protocols and their implementation. Worked through both the standards layer and the real-world edge cases that break naive implementations.',
+    tech: ['OAuth2 / OIDC', 'SAML 2.0', 'Duende IdentityServer', 'OpenIddict', 'Azure AD / Entra', 'JWT / token lifecycle'],
+  },
+];
+---
+
+<section id="expertise" class="py-24 px-6 border-t border-ink/10">
+  <div class="max-w-5xl mx-auto">
+    <h2 class="font-mono text-accent text-xs tracking-widest uppercase mb-10">Expertise</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {domains.map((domain) => (
+        <div class="rounded-lg border border-ink/10 bg-surface-card p-6 flex flex-col">
+          <p class="font-mono text-accent text-xs tracking-widest uppercase mb-2">
+            {domain.label}
+          </p>
+          <h3 class="text-base font-semibold mb-3">{domain.title}</h3>
+          <p class="text-muted text-sm leading-relaxed flex-1 mb-5">
+            {domain.description}
+          </p>
+          <ul class="space-y-1">
+            {domain.tech.map((t) => (
+              <li class="text-xs text-muted font-mono">{t}</li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>

@@ -1,0 +1,30 @@
+---
+import Base from "../layouts/Base.astro";
+import Nav from "../components/Nav.astro";
+import Hero from "../components/Hero.astro";
+import About from "../components/About.astro";
+import Expertise from "../components/Expertise.astro";
+import Work from "../components/Work.astro";
+import Experience from "../components/Experience.astro";
+import Contact from "../components/Contact.astro";
+import Footer from "../components/Footer.astro";
+---
+
+<Base
+  title="Mark Pitt: Senior .NET & AI Systems Engineer"
+  description="Senior .NET and AI systems engineer based in Bridgnorth, Shropshire, UK. 25+ years building production software across automotive systems, enterprise platforms, AI agent tooling, and identity infrastructure."
+>
+  <a href="#main" class="skip-link font-mono text-sm font-semibold tracking-widest uppercase"
+    >Skip to content</a
+  >
+  <Nav />
+  <main id="main" tabindex="-1">
+    <Hero />
+    <About />
+    <Expertise />
+    <Work />
+    <Experience />
+    <Contact />
+  </main>
+  <Footer />
+</Base>

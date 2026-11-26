@@ -1,0 +1,90 @@
+---
+const projects = [
+  {
+    name: 'rollama',
+    description:
+      'Rust CLI for managing remote Ollama instances: start, stop, query models, and stream inference across multiple hosts. My daily driver for the local LLM stack.',
+    tags: ['Rust', 'CLI', 'Ollama'],
+    href: null,
+    badge: 'private',
+  },
+  {
+    name: 'SharpSquad',
+    description:
+      'C# multi-agent orchestrator for Claude Code. Runs each agent in its own git worktree and tmux window, with a Terminal.Gui dashboard, plugins loaded at runtime, and an Anthropic-to-OpenAI proxy for other providers.',
+    tags: ['C#', '.NET', 'Claude Code', 'tmux'],
+    href: null,
+    badge: 'private',
+  },
+  {
+    name: 'FreeAgent MCP',
+    description:
+      'Public MCP server exposing the FreeAgent accounting API to LLM agents. Lets me ask natural-language questions about invoices, expenses, and cashflow without opening a browser.',
+    tags: ['MCP', 'TypeScript', 'FreeAgent API'],
+    href: 'https://github.com/markpitt/freeagent-mcp',
+    badge: null,
+  },
+  {
+    name: 'Claude Skills',
+    description:
+      'The 71 Claude Skills I use, in seven groups: .NET, language best practice, engineering practice, APIs, AI engineering, developer tooling and GCSE revision tutors. Each one was used on real work before it went in.',
+    tags: ['Python', 'Claude Code', 'Claude Desktop', 'Skills'],
+    href: 'https://github.com/markpitt/claude-skills',
+    badge: null,
+  },
+  {
+    name: 'Emailzor',
+    description:
+      'Razor-syntax email templating engine for .NET. HTML and plain text from the same template, multiple storage backends, layout and partial support, and a standalone Blazor WASM studio for non-developer design.',
+    tags: ['C#', '.NET', 'Razor', 'Blazor'],
+    href: null,
+    badge: 'private',
+  },
+  {
+    name: 'StanfordACE',
+    description:
+      'C#/.NET 10 implementation of the Stanford ACE context engineering paper. ACE treats LLM contexts as evolving playbooks. A three-agent architecture (Generator, Reflector, Curator) accumulates domain heuristics over time. Full stack: .NET Aspire orchestration, PostgreSQL persistence, Blazor monitoring UI.',
+    tags: ['C#', '.NET 10', '.NET Aspire', 'Claude API'],
+    href: null,
+    badge: 'private',
+  },
+];
+---
+
+<section id="work" class="py-24 px-6 border-t border-ink/10">
+  <div class="max-w-5xl mx-auto">
+    <h2 class="font-mono text-accent text-xs tracking-widest uppercase mb-10">Selected Work</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      {projects.map((project) => (
+        <div class="rounded-lg border border-ink/10 bg-surface-card p-6 flex flex-col group">
+          <div class="flex items-start justify-between mb-3">
+            <h3 class="font-semibold font-mono text-sm">{project.name}</h3>
+            {project.href ? (
+              <a
+                href={project.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="-mt-1 -mr-1 inline-flex size-6 shrink-0 items-center justify-center text-muted group-hover:text-accent transition-colors duration-150 text-base leading-none"
+                aria-label={`View ${project.name} on GitHub (opens in a new tab)`}
+              >
+                ↗
+              </a>
+            ) : (
+              <span class="text-muted text-xs font-mono">{project.badge ?? 'client'}</span>
+            )}
+          </div>
+          <p class="text-muted text-sm leading-relaxed flex-1 mb-5">
+            {project.description}
+          </p>
+          <div class="flex flex-wrap gap-2">
+            {project.tags.map((tag) => (
+              <span class="text-xs text-muted font-mono bg-surface-pill px-2 py-0.5 rounded">
+                {tag}
+              </span>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>

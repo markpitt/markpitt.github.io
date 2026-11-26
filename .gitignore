@@ -1,0 +1,48 @@
+# `.llm-wiki/` IS committed, since 19/08/2026. It held only site decisions and design notes by
+# then, and this repository is not the one it was excluded from.
+#
+# THIS FILE SHIPS to the public repository, so the reasoning is deliberately not here: it is in
+# the internal instructions file at the root of this directory, under the Wiki heading, together
+# with the two premises of the original rule and the dates each stopped being true. The struck
+# original is at `.llm-wiki/decisions/decision-gitignore-wiki.md`.
+#
+# Removed rather than negated. A negation does work here, tested rather than assumed, but it
+# leaves two rules cancelling each other and the next person to tidy the file has a 50% chance of
+# deleting the wrong one.
+# build output
+dist/
+# generated types
+.astro/
+
+# dependencies
+node_modules/
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+
+# environment variables
+.env
+.env.production
+
+# macOS-specific files
+.DS_Store
+
+# jetbrains setting folder
+.idea/
+
+# mise local overrides
+mise.local.toml
+
+
+# the agent layer's Python environment
+agents/.venv/
+agents/**/__pycache__/
+.pytest_cache/
+
+# playwright
+test-results/
+playwright-report/

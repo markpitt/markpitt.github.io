@@ -1,0 +1,75 @@
+name: Deploy to GitHub Pages
+
+# Pull requests build the site and nothing else. A push to main, which is how a merged release PR
+# lands, builds and deploys it to GitHub Pages. Mark's rule (25/11/2026): a public repository is
+# hosted on GitHub Pages, a private one on Cloudflare Workers.
+#
+# This is the user site, so it serves from the root of the custom domain (markpitt.dev) and needs
+# no base path. The custom domain is set in Settings > Pages, not by a CNAME file: an Actions
+# deploy ignores that file.
+#
+# NO MISE, deliberately. This workflow has to run in a tree that has no mise.toml, and
+# package.json already declares `build`, so npm alone is enough.
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      # Pinned by commit SHA rather than by tag: a tag is mutable and can be re-pointed by its
+      # publisher at any time. The deploy job below can publish to the live domain.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Upload the Pages artefact
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: ./dist
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Only this job can write to Pages; the build job keeps the read-only token.
+    permissions:
+      pages: write
+      id-token: write
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Configure Pages
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

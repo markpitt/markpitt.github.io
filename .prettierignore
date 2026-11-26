@@ -1,0 +1,21 @@
+# Generated, vendored, or deliberately not valid in their own syntax.
+
+# Templates, not documents. role.settings.template.json carries @@REMOTE_CONTROL@@ where a
+# JSON value goes, because tmux_session.sh substitutes it per role before writing the real
+# settings file. Prettier cannot parse it and should not try.
+agents/tmux/*.template.json
+
+
+# Environments and build output
+agents/.venv/
+node_modules/
+dist/
+.astro/
+test-results/
+playwright-report/
+
+
+# Lockfiles
+package-lock.json
+agents/uv.lock
+mise.lock

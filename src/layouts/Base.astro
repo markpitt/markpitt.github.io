@@ -1,0 +1,246 @@
+---
+import '../styles/global.css';
+// #41. Self-hosts Inter and JetBrains Mono instead of loading them from
+// fonts.googleapis.com/fonts.gstatic.com. Astro 7.2.2 also ships a built-in Fonts API
+// (`fonts` in astro.config.mjs, verified top-level and not experimental at
+// node_modules/astro/dist/types/public/config.d.ts:2935) whose `google` provider was tried
+// first and reverted: it downloads at build time, but node_modules/astro/dist/assets/fonts/core/
+// resolve-family.js:12 unconditionally derives `uniqueName: `${name}-${hasher.hashObject(family)}``
+// with no config to disable it, so the `@font-face` it emits never says `font-family: 'Inter'`,
+// only a hashed name like `Inter-8d42f7dede87733d` (confirmed by building and reading dist/index.html).
+// Consuming that correctly means every bare reference to 'Inter'/'JetBrains Mono' -- this file's
+// own `font-[Inter,sans-serif]` body class AND src/styles/global.css's `--font-mono` @theme
+// value, design's file -- would have to switch to `var(--font-inter-src)` and equivalent. Reported to
+// design/guardian rather than silently done: it crosses into a file this ticket's own role split
+// says is not mine, for a cost the ticket's "smallest change" framing did not anticipate.
+//
+// @fontsource/* avoids that entirely: its per-weight, per-subset CSS files declare the literal,
+// unhashed family name (verified: `tar xzf $(npm pack @fontsource/inter@5.3.0 --silent) -O
+// package/latin-400.css` prints `font-family: 'Inter';`), so nothing downstream needed to change.
+// It also needs no network at build time -- the woff2 files ship inside the npm package itself,
+// fetched once by `npm install`/CI's `mise-action` step, rather than re-fetched from Google on
+// every `astro build` the way the Fonts API route would have. That is the second reason it is the
+// better fit for a site whose deploy is manual and infrequent (the deploy note).
+//
+// Only `latin-*` imported, not the bare `400.css`/`600.css`/`700.css`: those bundle seven
+// unicode-range subsets (cyrillic, cyrillic-ext, greek, greek-ext, vietnamese, latin-ext, latin)
+// as separate @font-face blocks, and this site's content is English-only. Weights match
+// astro.config.mjs's now-removed comment: enumerated from both class-grep and rendered-DOM axes
+// (docs/specs/self-hosted-fonts.md criterion 2) at 93052a7 before this change -- Inter at
+// 400/600/700 (155/9/1 rendered elements), JetBrains Mono at 400/600 (86/9). Weight 500 appeared
+// on neither axis for either family, despite the old CDN URL requesting it for both, and is not
+// imported here.
+import '@fontsource/inter/latin-400.css';
+import '@fontsource/inter/latin-600.css';
+import '@fontsource/inter/latin-700.css';
+import '@fontsource/jetbrains-mono/latin-400.css';
+import '@fontsource/jetbrains-mono/latin-600.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = 'Mark Pitt',
+  description = 'Senior .NET and AI systems engineer based in Bridgnorth, Shropshire, UK.',
+} = Astro.props;
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site).toString();
+const ogImageURL = new URL('/og-image.png', Astro.site).toString();
+
+const person = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: 'Mark Pitt',
+  jobTitle: 'Senior .NET & AI Systems Engineer',
+  url: canonicalURL,
+  sameAs: ['https://github.com/markpitt', 'https://linkedin.com/in/markpitt'],
+};
+---
+
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8" />
+    <!--
+      #26, criterion 12: no flash of the wrong theme on first paint. Blocking, inline and
+      synchronous, run as early in <head> as possible so `data-theme` is set on <html> before
+      the browser paints anything. This is the site's first executable in-browser JavaScript;
+      the no-client-JS rule records the exception, because a persisted, visitor-chosen override of
+      `prefers-color-scheme` cannot be expressed in CSS alone.
+
+      One script only, not two: the click-handling for the theme control in Nav.astro is wired
+      from this same script on DOMContentLoaded, rather than a second <script> placed near the
+      control. The control's buttons don't exist yet when this runs, which is exactly why the
+      wiring is deferred rather than split out.
+
+      The absence of `data-theme` is what "system" means (criterion 11): selecting it clears the
+      stored preference instead of writing a snapshot of the OS value, so the page keeps
+      following `prefers-color-scheme` rather than freezing at whatever it read once.
+
+      #43, criterion 1. The accessible name carries both facts a sighted user reads off the
+      glyph: what the theme is set to right now, and what pressing does next. Set on the button
+      itself (aria-label) rather than on the icon, so a title on an inlined icon SVG (if one
+      ever carried one) cannot leak through the accname computation; the icons are
+      additionally aria-hidden and title-free, belt and braces, per #37.
+
+      Verified: the aria-label attribute updates correctly on every press (CDP
+      accessibility-tree read against the landed markup).
+
+      NOT verified, and left OPEN rather than resolved: whether a screen reader announces an
+      accessible-name change on an element that already has focus. This needs real assistive
+      technology; this environment has none, and nothing planned so far on this ticket
+      resolves it. Criterion 5 (Mark tabbing the page) does NOT answer this: Mark is not a
+      screen-reader user, and that check only settles focus visibility and reachability.
+
+      Decision: no aria-live region added. Basis, recalled rather than measured today:
+      changing the accessible name of the focused element is understood to raise a platform
+      accessibility name-change notification most screen readers subscribe to, the same
+      mechanism other dynamic-label toggle buttons (mute/unmute is the common example) rely
+      on without an explicit live region, and adding one speculatively risks
+      double-announcement where the plain mechanism already works. If a real screen-reader
+      test later shows the change is not announced, the fix is a visually-hidden live region
+      mirroring this label: one element plus one text write, not a rework.
+
+      #43, criterion 2. aria-pressed is never set anywhere in this script. A single cycling
+      control has no unpressed siblings to distinguish itself from, so there is nothing for
+      it to carry; this is satisfied by absence rather than by displacing another attribute.
+    -->
+    <script is:inline>
+      (function () {
+        var STORAGE_KEY = "theme";
+        var root = document.documentElement;
+        var CYCLE = ["light", "dark", "system"];
+        var LABELS = { light: "Light", dark: "Dark", system: "System" };
+
+        function resolveChoice() {
+          var stored;
+          try {
+            stored = localStorage.getItem(STORAGE_KEY);
+          } catch (error) {
+            stored = null;
+          }
+          return stored === "dark" || stored === "light" ? stored : "system";
+        }
+
+        function applyAttribute(choice) {
+          if (choice === "system") {
+            root.removeAttribute("data-theme");
+          } else {
+            root.setAttribute("data-theme", choice);
+          }
+        }
+
+        function nextChoice(choice) {
+          var index = CYCLE.indexOf(choice);
+          return CYCLE[(index + 1) % CYCLE.length];
+        }
+
+        // Runs synchronously, before paint: the reason this script exists.
+        applyAttribute(resolveChoice());
+
+        document.addEventListener("DOMContentLoaded", function () {
+          var button = document.querySelector("[data-theme-toggle]");
+          if (!button) return;
+
+          // This handler is what corrects data-theme-state (server-rendered as "system") to
+          // whatever is actually stored, and it runs after the paint-blocking resources in
+          // <head> are already in flight, not before them. Measured rather than assumed: with
+          // a stored choice already set, first-contentful-paint landed at ~102-124ms against
+          // domContentLoadedEventEnd at ~13ms, on this build, with the Google Fonts stylesheet
+          // this <head> loads (see the font gotcha). DOMContentLoaded does not wait on
+          // that external stylesheet; first paint does, which is the entire reason the ~90ms
+          // margin exists and is not a coincidence of this environment's timing.
+          //
+          // That margin has a dependency, and #41 (self-hosting both font families) removes
+          // it. Local CSS is still render-blocking, so DOMContentLoaded almost certainly still
+          // finishes first, but the number above will not hold, and nobody implementing #41
+          // has a reason to open git log for a fact filed only in a commit message. Whoever
+          // picks up #41: re-measure first-contentful-paint against domContentLoadedEventEnd
+          // with a stored non-system choice before assuming the icon still never flashes.
+
+          // Takes the choice as an argument rather than re-deriving it from resolveChoice():
+          // on click, the choice already applied is the one this control must report, whether
+          // or not the write that was supposed to persist it succeeded. Re-reading storage
+          // here was the first half of the defect the review caught: when a write throws
+          // (private browsing, quota), storage still holds whatever it held before, and
+          // resolveChoice() returns that stale value instead of the choice just applied.
+          function updateLabel(choice) {
+            var next = nextChoice(choice);
+            button.setAttribute(
+              "aria-label",
+              "Theme: " + LABELS[choice] + ". Press for " + LABELS[next] + ".",
+            );
+            button.setAttribute("data-theme-state", choice);
+          }
+
+          button.addEventListener("click", function () {
+            // The second half of the same defect, and the one that actually breaks the
+            // cycle: computing the next step from resolveChoice() (storage) rather than from
+            // this button's own last-applied state. When storage never reflects a write
+            // (throws on every call, or silently keeps a stale value), resolveChoice()
+            // returns the same answer on every click, nextChoice() of a constant is a
+            // constant, and the control gets stuck one step into the cycle -- dark becomes
+            // permanently unreachable rather than merely mis-labelled. Reading this button's
+            // own data-theme-state instead makes the control authoritative about what it
+            // just did, exactly as the old direct-selection buttons were (each carried its
+            // own state in the markup rather than reading storage back); storage is
+            // consulted only once, at initial load, before this button has any state of its
+            // own to read.
+            var applied = button.getAttribute("data-theme-state");
+            var choice = nextChoice(applied);
+            try {
+              if (choice === "system") {
+                localStorage.removeItem(STORAGE_KEY);
+              } else {
+                localStorage.setItem(STORAGE_KEY, choice);
+              }
+            } catch (error) {
+              // Storage unavailable (private browsing, quota) or over quota. The choice this
+              // control just applied is authoritative for this page view regardless: it does
+              // not re-read storage to find out what it did, and it will not survive a
+              // reload, but it stays correct and it stays reachable for every state within
+              // this view.
+            }
+            applyAttribute(choice);
+            updateLabel(choice);
+          });
+
+          updateLabel(resolveChoice());
+        });
+      })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="description" content={description} />
+    <link rel="icon" href="/favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="canonical" href={canonicalURL} />
+    <!--
+      #41. This file used to carry a rel="preconnect" pair for fonts.googleapis.com and
+      fonts.gstatic.com plus a rel="stylesheet" link to Google's css2 endpoint here. Both are
+      gone outright rather than replaced with an equivalent tag: the @fontsource/* imports at
+      the top of this file's frontmatter put the @font-face rules in the page's own bundled CSS,
+      no separate request or origin involved, and the pre-existing build carried no
+      rel="preload" for the font files themselves either (checked: the CDN version's own <head>
+      never had one), so there is no prior preload behaviour to reproduce here.
+    -->
+    <title>{title}</title>
+
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:image" content={ogImageURL} />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageURL} />
+
+    <script type="application/ld+json" set:html={JSON.stringify(person)} is:inline />
+  </head>
+  <body class="bg-surface text-ink antialiased font-[Inter,sans-serif]">
+    <slot />
+  </body>
+</html>

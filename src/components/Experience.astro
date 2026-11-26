@@ -1,0 +1,62 @@
+---
+const roles = [
+  {
+    company: 'Rock Solid Knowledge',
+    role: 'Senior Software Engineer, including a period as Lead',
+    dates: 'August 2016 – July 2026',
+    summary:
+      'Identity, DevOps and CI/CD, cross-platform development, AI integration, and full-stack .NET across multiple client SaaS products.',
+  },
+  {
+    company: 'Who Solutions Ltd',
+    role: 'Founder & Lead Consultant',
+    dates: '2010 – 2017',
+    summary:
+      'Own software consultancy. Clients included JLR, TRW (VW EPS system), Aston Martin, Emerson Control Techniques, and Actemium UK. Also spent 2012 to 2013 as a Senior Software Engineer at Mantacore AB, working in Stockholm most weeks.',
+  },
+  {
+    company: 'Omitec Group Ltd',
+    role: 'Technical Architect',
+    dates: '2006 – 2009',
+    summary:
+      'Designed the vehicle diagnostic communications framework (CAN, ISO9141, ISO14230, J1850) underpinning six commercial diagnostic products. OEM clients included Tesla, Lotus, and Land Rover.',
+  },
+  {
+    company: 'Cosworth Technology / Mahle Powertrain',
+    role: 'Principal Engineer',
+    dates: '2004 – 2006',
+    summary:
+      'Ford Europe end-of-line test systems and OBD calibration tooling in C#. Designed IDAA, a data acquisition and analysis tool with a Windows Embedded logger for OBD calibration engineers, turning an earlier MATLAB and LabVIEW prototype into a product.',
+  },
+  {
+    company: 'Rover Group (later Land Rover)',
+    role: 'Project & Principal Engineer',
+    dates: '1994 – 2004',
+    summary:
+      'ECU diagnostics, CAN bus, PIC microcontroller tooling, and vehicle electrical test systems. BSc gained on day release during this period.',
+  },
+  {
+    company: 'Garringtons / Rover Group',
+    role: 'Apprentice',
+    dates: '1989 – 1994',
+    summary: 'Instrumentation and Measurement specialisation. Foundation in precision engineering and calibration principles.',
+  },
+];
+---
+
+<section id="experience" class="py-24 px-6 border-t border-ink/10">
+  <div class="max-w-5xl mx-auto">
+    <h2 class="font-mono text-accent text-xs tracking-widest uppercase mb-10">Experience</h2>
+    <div class="relative pl-6 border-l border-ink/10">
+      {roles.map((role, i) => (
+        <div class={`relative mb-10 ${i === roles.length - 1 ? '' : ''}`}>
+          <div class="absolute -left-[25px] top-1.5 w-2 h-2 rounded-full bg-accent-strong" />
+          <p class="text-xs text-muted font-mono mb-1">{role.dates}</p>
+          <h3 class="font-semibold text-sm">{role.company}</h3>
+          <p class="text-sm text-muted mb-2">{role.role}</p>
+          <p class="text-sm text-muted leading-relaxed">{role.summary}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>

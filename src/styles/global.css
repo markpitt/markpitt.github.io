@@ -1,0 +1,329 @@
+@import "tailwindcss";
+
+/* Rebrand palette (#26), both modes. Values registered here are the LIGHT defaults: Tailwind
+   v4's @theme compiles to :root-scoped custom properties, so this block alone is the "system
+   prefers light, or has no preference" case. The dark-mode override and the explicit-choice
+   overrides that make the three-way control work sit in plain CSS below, using the same
+   property names, so every utility class generated from these tokens (bg-surface, text-ink,
+   text-muted, text-accent, etc.) is theme-aware with no dark:/light: variants needed anywhere
+   in markup. See docs/design/rebrand-palette.md for the full derivation and the rule about
+   where each colour may and may not carry text. */
+@theme {
+  /* Light ladder: body/nav, card, pill. Warm, mirrors the dark ladder inverted. */
+  --color-surface: #fffbf8;
+  --color-surface-card: #fbf1ea;
+  --color-surface-pill: #f2e0d4;
+
+  /* Primary text. markpitt.dev brand `ink` (18/11/2026, accessibility audit S5): charcoal
+     #2e2823 in light mode (14.13:1 on body), warm off-white ink-dark #e8dfd5 in dark mode
+     (below, 15.11:1 on body). Replaces the pre-merge #3a322c and zinc-100 #f4f4f5. */
+  --color-ink: #2e2823;
+
+  /* Secondary/dimmer text. Light value newly sourced 17/08/2026, and is the brand's
+     muted-light. Dark value (below) is the brand's muted-dark #9c8c7d since 18/11/2026
+     (6.12:1 on body, 5.17:1 on pill), replacing the neutral #8a8a8a. See
+     docs/design/a11y-contrast.md. */
+  --color-muted: #665a4e;
+
+  /* Accent text: links, headings-in-brand-colour, the hero highlight, anywhere the brand
+     colour carries readable text. Mode-locked, light value here. */
+  --color-accent: #963700;
+
+  /* Cross-mode non-text accent: borders, icons, large display text, and #32's focus
+     indicator wherever it is not locked to a dark background. One value, both modes, checked
+     to clear 3:1 on every surface in both ladders (worst case 3.539:1). Never used for body
+     text in either mode. */
+  --color-accent-strong: #ce4b00;
+
+  /* Warm dark neutral (the brand's charcoal), same hex as --color-ink's light value, registered
+     separately because its role in dark mode is different in kind: never text there (1.37:1 on
+     body, fails), only a surface or fill (11.35 to 14.13:1 as text is the light-mode figure,
+     recorded for completeness). Do not use as dark-mode text. */
+  --color-brand-neutral: #2e2823;
+
+  /* Mode-locked accent for the skip link only. Always this value regardless of theme, because
+     the skip link keeps an opaque dark background in both modes (criterion 9) and needs the
+     dark-mode text accent for it, never the light one. */
+  --color-accent-locked: #f85b00;
+
+  /* #42: JetBrains Mono is loaded in Base.astro (via the Google Fonts CDN when this was
+     written; self-hosted via @fontsource since #41, 18/08/2026), but nothing in this file named
+     it, so every font-mono element resolved to Tailwind's own bundled default below instead.
+     This line overrides that default (node_modules/tailwindcss/theme.css) rather than replacing
+     it outright: the same fallback chain follows the named face, so a slow or failed fetch still
+     lands on a monospace family instead of falling through to serif or sans.
+     See docs/design/font-mono.md for the before/after measurements: 22 template sites, 93
+     rendered elements once Expertise/Work/Experience map their lists. */
+  --font-mono:
+    "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+}
+
+/* System dark preference. Overrides the light defaults above when the OS prefers dark and no
+   explicit choice has been made (absence of [data-theme] is what "system" means, criterion
+   11). A media query confers no precedence of its own; this block wins because Tailwind
+   emits @theme inside @layer theme (confirmed by inspecting the compiled dist CSS) and this
+   block sits outside any layer, and unlayered CSS beats layered CSS regardless of
+   specificity. The [data-theme] blocks below are unlayered too, so between them and this one
+   the tie is broken by source order, which is why they are declared after this block. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-surface: #09090b;
+    --color-surface-card: #0f0f11;
+    --color-surface-pill: #1d1d20;
+    --color-ink: #e8dfd5;
+    --color-muted: #9c8c7d;
+    --color-accent: #f85b00;
+  }
+}
+
+/* Explicit choice, set by the theme control's inline script as [data-theme] on the root
+   element. Declared after the media query above so it wins ties at equal specificity by
+   source order, regardless of what the OS prefers. */
+[data-theme="light"] {
+  --color-surface: #fffbf8;
+  --color-surface-card: #fbf1ea;
+  --color-surface-pill: #f2e0d4;
+  --color-ink: #2e2823;
+  --color-muted: #665a4e;
+  --color-accent: #963700;
+}
+
+[data-theme="dark"] {
+  --color-surface: #09090b;
+  --color-surface-card: #0f0f11;
+  --color-surface-pill: #1d1d20;
+  --color-ink: #e8dfd5;
+  --color-muted: #9c8c7d;
+  --color-accent: #f85b00;
+}
+
+/* Skip link, the page's first focusable element (#landmarks-headings, criteria 7-9).
+   Off-screen until it receives keyboard focus; opaque background, so its contrast holds
+   regardless of what it overlaps when focused (the fixed nav sits at z-50 underneath it).
+   Background and accent are both literal, non-themed values: criterion 9 requires this
+   element keep a dark opaque background and the dark-mode text accent in BOTH page themes,
+   so it must not follow --color-surface/--color-accent's theme switching. #f85b00 on
+   zinc-900 (#18181b): 5.473:1, clears WCAG AA 4.5:1. Re-measured 17/08/2026 against the
+   reworked palette; the withdrawn brand orange measured 5.06:1 here. See
+   docs/design/landmarks-headings.md for the method. */
+.skip-link {
+  position: fixed;
+  top: -4rem;
+  left: 1rem;
+  z-index: 100;
+  padding: 0.75rem 1.25rem;
+  background-color: var(--color-zinc-900);
+  color: var(--color-accent-locked);
+  border: 2px solid var(--color-accent-locked);
+  border-radius: 0.25rem;
+  transition: top 150ms ease;
+}
+
+.skip-link:focus {
+  top: 1rem;
+}
+
+/* Focus indicator (#32, criterion 1). :focus-visible over :focus: :focus also fires on a mouse
+   click, and a ring appearing on every pointer activation would be a click indicator, not a
+   focus one. docs/design/focus-indicator.md records this reasoning; criterion 5's test must
+   assert :focus-visible, not :focus.
+
+   An outline, drawn OUTSIDE the box (the default outline placement), not another inset ring.
+
+   #43, 17/08/2026: the reason below is superseded, no longer true, and the decision is kept anyway.
+   It read: #26 gave the theme control's pressed buttons an INSET ring in this same
+   --color-accent-strong, and System was pressed at rest, so an inset focus ring in the same
+   colour would have been invisible exactly where it mattered, tabbing to System would have
+   changed nothing visible. #43 replaced the three pressed buttons with one cycling button that
+   carries no aria-pressed and no inset ring at all, so that collision cannot occur any more.
+   That does NOT make the inset ring an option again here: reversing this to chase a rationale
+   that no longer applies is churn with no benefit, and #32's criterion 1 (a visible, deliberately
+   set focus indicator) never depended on the collision, only the choice of geometry did. Outline
+   stays outside the box because changing it now buys nothing, not because the old reason still
+   holds. Confirmed by screenshot at the time: see docs/design/focus-indicator.md. */
+:focus-visible {
+  outline-width: 2px;
+  outline-style: solid;
+  outline-color: var(--color-accent-strong);
+  outline-offset: 2px;
+}
+
+/* #44: the hamburger nav collapse. 586px matches tests/e2e/hamburger-nav.spec.ts's
+   COLLAPSE_WIDTH: the width below which the nav's one-row link form starts wrapping. This
+   constant and docs/specs/hamburger-nav.md's criterion 3 (re-measured across the width range on
+   every change to nav text metrics, e.g. #41's self-hosted fonts or #39's inline siblings) are
+   two halves of one invariant. Whoever adjusts either has to update the other; this comment is
+   where that note lives on this side.
+
+   Was tests/e2e/nav-lockup.spec.ts's TWO_TO_ONE_ROW until #44 retired it: with the links behind
+   the hamburger the nav is one row at every width, so the wrap-threshold search that constant
+   fed converged on nothing to find, on both brackets, on both projects. nav-lockup.spec.ts holds
+   no collapse constant any more; the coupling this comment names is with hamburger-nav.spec.ts
+   now, not a second location alongside the old one.
+
+   #41: 586, not 589. #43's chromium-desktop measurement gave 586; #44's own sweep (Pixel 7
+   emulation, 580-600 at 1px) found chromium and mobile disagreed by 3px, because #37 had already
+   established that Google Fonts serves a different woff2 per User-Agent, and 589 was recorded as
+   the measured worst case across both engines with deliberately no safety margin added on top.
+   #41 self-hosts both families via @fontsource, which ships one fixed file set with no
+   per-User-Agent negotiation left, removing that mechanism outright. test-agent re-measured on
+   the self-hosted tree (381 readings per engine, 320-700px at 1px, against the 67px one-row
+   baseline) and found chromium and Pixel 7 now agree at 586: wrapped below it, clean at and
+   above it, on both engines. Moved down from 589 rather than left there, on the same
+   "measured value, no margin added" principle #44 committed to: holding 589 after the engines
+   converged would have quietly turned a measured worst case into an unchosen 3px margin.
+   Recorded as a review ruling rather than a plain finding, because visitors
+   between 586px and 588px now see the full link row instead of the hamburger, a behavioural
+   change this ticket did not itself set out to make; Mark gets both numbers, both engines and
+   the shas at close.
+
+   One consequence when this was 589: on chromium, where the one-row form already fit at 586,
+   the collapse happened 3px earlier than that engine strictly needed. That consequence no
+   longer applies now the two engines agree.
+
+   Hidden by default, shown only while the <details> carries [open]: that is the collapsed
+   state. The <details> trap (docs/specs/hamburger-nav.md): the user agent hides disclosure
+   content whenever [open] is absent, so without the min-width override below, a visitor who
+   opened the menu below 586px, closed it, then widened past the breakpoint would land on a nav
+   with no links at all. Only resizing across the breakpoint can reach that state; loading a
+   width fresh cannot, which is how it gets missed. */
+.nav-menu {
+  /* Anchor for the overlay below: absolutely-positioned content in .nav-menu-links resolves
+     against the nearest positioned ancestor, which without this would be the nav bar's own
+     fixed block (or further still), not the toggle it drops from. */
+  position: relative;
+}
+
+.nav-menu-links {
+  display: none;
+}
+
+/* Criterion 8: out of flow, so opening the menu overlays the page rather than pushing it down
+   (Mark's decision 2, docs/specs/hamburger-nav.md). Anchored to .nav-menu, not the whole nav
+   bar, so it reads as a dropdown from the toggle rather than a full-width panel; that is a
+   design choice, not something the spec requires either way. */
+.nav-menu[open] .nav-menu-links {
+  display: flex;
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+  padding: 1rem 1.25rem;
+  background-color: var(--color-surface-card);
+  border: 1px solid color-mix(in oklab, var(--color-ink) 10%, transparent);
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 30px -10px
+    color-mix(in oklab, var(--color-ink) 30%, transparent);
+}
+
+/* The summary's own affordance and marker removal. Tailwind's own base layer sets
+   summary{display:list-item}, the native disclosure triangle's box; both replaced outright.
+   Sized to match #43's own theme control exactly (20px icon, 6px padding each side, 1px border
+   each side = 34px border box), so criterion 6's 24px floor (the border box, per #43's own
+   established figure, not the padding box) clears by the same 10px margin the theme control
+   already does. */
+.nav-menu-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  list-style: none;
+  cursor: pointer;
+  padding: 0.375rem;
+  border: 1px solid color-mix(in oklab, var(--color-ink) 10%, transparent);
+  border-radius: 9999px;
+  color: var(--color-muted);
+  transition: color 150ms ease;
+}
+
+.nav-menu-toggle:hover {
+  color: var(--color-ink);
+}
+
+.nav-menu-toggle::marker,
+.nav-menu-toggle::-webkit-details-marker {
+  display: none;
+}
+
+/* Criterion 2 fix, and why it lives here rather than at the collapse block above: this media
+   query and .nav-menu-toggle's unconditioned display: inline-flex rule are equal specificity
+   (0,0,1,0 each), a media query contributes none of its own, and CSS breaks the tie by source
+   order. Declared above the unconditioned rule, "display: none" lost every time regardless of
+   viewport width, so the hamburger stayed visible at and above 586px. Declaring this block
+   below fixes it by source order alone; .nav-menu-links's !important below stays justified on
+   its own terms (0,0,3,0 vs 0,0,1,0 against .nav-menu[open] .nav-menu-links, a genuine
+   specificity win), so moving this block changes nothing about that rule. */
+@media (min-width: 586px) {
+  /* Criterion 2: the hamburger is never visible at or above the collapse width. */
+  .nav-menu-toggle {
+    display: none;
+  }
+
+  /* Forced visible regardless of [open], overriding the collapsed-state rules above: this is
+     the fix for the <details> trap described there. The overlay positioning above is a narrow-
+     width-only concern, so it is reset here too -- without this, the always-visible one-row
+     form above 586px would inherit position:absolute from the [open] rule and detach from the
+     nav bar's flow instead of sitting in it. */
+  .nav-menu-links {
+    display: flex !important;
+    position: static;
+    flex-direction: row;
+    padding: 0;
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+  }
+
+  /* Mark's ruling on the <details> content-visibility defect (docs/specs/hamburger-nav.md,
+     main@f81c430): a closed <details>'s content is wrapped by the user agent in an internal
+     ::details-content node carrying content-visibility: hidden, which display on a descendant
+     cannot defeat, !important or not -- so above, .nav-menu-links laid out and painted while
+     still reading as hidden to checkVisibility() and to Playwright's own actionability engine.
+     This rule defeats that at the only place it needs defeating: scoped inside this media query,
+     so a closed disclosure below 586px is untouched and still hides its content correctly.
+     display: flex !important above is left in place; it may be what the fallback needs on
+     engines without ::details-content, see docs/design/hamburger-nav.md. */
+  .nav-menu::details-content {
+    content-visibility: visible;
+  }
+}
+
+/* #44: two icons, hamburger.svg and nav-close.svg, swapped on the toggle's own [open] state.
+   Driven from the parent <details>'s native attribute, the same "no ARIA, no script" source
+   the spec requires for the expanded/collapsed state itself (docs/specs/hamburger-nav.md):
+   this is a second, purely visual consumer of that same attribute, not a new state to keep in
+   sync. Aside from #43's theme control (a different toggle entirely), this is the site's
+   second icon-swap and follows its convention: both icons stay in the DOM, aria-hidden, and
+   whichever one [open] selects is shown by CSS alone. */
+.nav-menu-toggle-icon {
+  height: 1.25rem;
+}
+
+/* Criterion 6 fix: the rule above sizes the wrapper's height only, and nothing sized the <svg>
+   child, so it rendered at its own intrinsic 0 width and the toggle measured 14x34 instead of
+   34x34 (6px padding + 1px border each side, with the icon contributing nothing). Scoped to
+   .nav-menu-toggle-icon > svg rather than a bare svg so this cannot reach the other five inlined
+   icons in Nav.astro. Deliberately not the [&>svg]:h-full [&>svg]:w-auto Tailwind arbitrary
+   variant those five use on their wrapper: this element's height already lives here, in
+   global.css, and splitting one icon's sizing across this file and dev's markup would leave the
+   next person needing to know both exist. [&>svg] is also a known trap in this repository (a
+   `>` inside a quoted class defeats [^<>]-style tag-sweep regexes); a scoped CSS rule avoids
+   adding a sixth site of it for no benefit. */
+.nav-menu-toggle-icon > svg {
+  height: 100%;
+  width: auto;
+}
+
+.nav-menu-toggle-icon-close {
+  display: none;
+}
+
+.nav-menu[open] .nav-menu-toggle-icon-open {
+  display: none;
+}
+
+.nav-menu[open] .nav-menu-toggle-icon-close {
+  display: inline-flex;
+}
