@@ -1,0 +1,106 @@
+---
+// The markpitt.dev site header, shared by the main site and every project site. Mark and
+// wordmark on the left (home), the site nav and the theme control on the right. Below the
+// collapse width in chrome.css the links sit behind a menu button.
+//
+// Part of the site chrome kit: personal-brand designs/site-chrome/, copied to generated/ by
+// designs/build.mjs. Do not edit a copy: change the source and rebuild.
+import mark from './icons/mark.svg?raw';
+import wordmark from './icons/wordmark.svg?raw';
+import hamburger from './icons/hamburger.svg?raw';
+import navClose from './icons/nav-close.svg?raw';
+import themeLight from './icons/theme-light.svg?raw';
+import themeDark from './icons/theme-dark.svg?raw';
+import themeSystem from './icons/theme-system.svg?raw';
+import { SITE_HOME, SITE_SECTIONS, SITE_PAGES, type SitePage } from './nav';
+
+export interface Props {
+  /** The main site's origin. Absolute by default, so a project site links home wherever it is served. */
+  home?: string;
+  /** True on the main site's own home page: its section links become in-page anchors. */
+  local?: boolean;
+  /** The site nav item this page belongs to, marked as the current page. */
+  current?: SitePage;
+  /** 'fixed' on the main site, whose hero pads for it; 'sticky' everywhere else. */
+  position?: 'fixed' | 'sticky';
+}
+
+const { home = SITE_HOME, local = false, current, position = 'sticky' } = Astro.props;
+const links = [
+  ...SITE_SECTIONS.map(([id, label]) => ({ href: local ? `#${id}` : `${home}/#${id}`, label, key: undefined })),
+  ...SITE_PAGES.map(([key, path, label]) => ({ href: `${home}${path}`, label, key })),
+];
+const icon = (svg: string, cls: string) => svg.replace('<svg ', `<svg class="${cls}" aria-hidden="true" focusable="false" `);
+---
+
+<nav class:list={['mpc-top', `mpc-top--${position}`]} aria-label="Site">
+  <div class="mpc-top-inner">
+    {
+      local ? (
+        <span class="mpc-lockup">
+          <span class="mpc-mark" aria-hidden="true" set:html={mark} />
+          <span class="mpc-wordmark" set:html={wordmark} />
+        </span>
+      ) : (
+        <a class="mpc-lockup" href={`${home}/`}>
+          <span class="mpc-mark" aria-hidden="true" set:html={mark} />
+          <span class="mpc-wordmark" set:html={wordmark} />
+        </a>
+      )
+    }
+    <div class="mpc-top-right">
+      <details class="nav-menu" data-nav-menu>
+        <summary class="nav-menu-toggle" aria-label="Menu">
+          <span class="nav-menu-toggle-icon nav-menu-toggle-icon-open" aria-hidden="true" set:html={icon(hamburger, 'i-open')} />
+          <span class="nav-menu-toggle-icon nav-menu-toggle-icon-close" aria-hidden="true" set:html={icon(navClose, 'i-close')} />
+        </summary>
+        <ul class="nav-menu-links">
+          {
+            links.map((link) => (
+              <li>
+                <a href={link.href} aria-current={link.key && link.key === current ? 'page' : undefined}>
+                  {link.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </details>
+      <button
+        type="button"
+        class="mpc-theme"
+        data-theme-toggle
+        data-theme-state="system"
+        aria-label="Theme: System. Press for Light."
+      >
+        <span class="mpc-theme-icon mpc-theme-light" aria-hidden="true" set:html={icon(themeLight, 'i-light')} />
+        <span class="mpc-theme-icon mpc-theme-dark" aria-hidden="true" set:html={icon(themeDark, 'i-dark')} />
+        <span class="mpc-theme-icon mpc-theme-system" aria-hidden="true" set:html={icon(themeSystem, 'i-system')} />
+      </button>
+    </div>
+  </div>
+</nav>
+
+<script>
+  // Closes the collapsed menu on a link, on Escape (focus back to the toggle), when focus leaves
+  // it and on a click outside it, which <details> cannot do on its own. Additive: without this
+  // script the menu still opens and closes and every link is reachable.
+  const menu = document.querySelector<HTMLDetailsElement>('[data-nav-menu]');
+  if (menu) {
+    const close = () => menu.removeAttribute('open');
+    menu.querySelectorAll('a').forEach((link) => link.addEventListener('click', close));
+    menu.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape' || !menu.open) return;
+      close();
+      menu.querySelector('summary')?.focus();
+    });
+    menu.addEventListener('focusout', (event) => {
+      const next = event.relatedTarget;
+      if (menu.open && next instanceof Node && !menu.contains(next)) close();
+    });
+    document.addEventListener('click', (event) => {
+      const target = event.target;
+      if (menu.open && target instanceof Node && !menu.contains(target)) close();
+    });
+  }
+</script>

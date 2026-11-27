@@ -1,0 +1,13 @@
+[
+  {
+    "id": "claude-overview",
+    "name": "Claude Overview",
+    "summary": "A tray app for Windows, Linux and macOS that puts Claude's service status, Max plan usage, API credit and the work waiting for you in one place.",
+    "path": "/claude-overview/",
+    "repo": "markpitt/claude-overview",
+    "licence": "MIT",
+    "tags": ["Tauri 2", "Rust", "React", "TypeScript"],
+    "image": "/projects/claude-overview.png",
+    "imageAlt": "Claude Overview's repository card: its name, the tray icon and the Overview tab."
+  }
+]

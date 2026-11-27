@@ -1,9 +1,7 @@
 ---
+// The site footer, from the shared markpitt.dev chrome kit. On the main site the name is plain
+// text and the right-hand side says what the site is built with.
+import Footer from "@chrome/Footer.astro";
 ---
 
-<footer class="border-t border-ink/10 px-6 py-8">
-  <div class="max-w-5xl mx-auto flex items-center justify-between text-xs text-muted font-mono">
-    <span>Mark Pitt</span>
-    <span>Built with Astro &amp; Tailwind CSS</span>
-  </div>
-</footer>
+<Footer local>Built with Astro &amp; Tailwind CSS</Footer>

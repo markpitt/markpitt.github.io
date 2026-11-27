@@ -1,0 +1,79 @@
+/* The markpitt.dev site chrome: header, project sub-bar, footer and skip link.
+ *
+ * Tokens only: every colour, size and radius is a custom property from tokens.css (the brand's
+ * generated token sheet, shipped beside this file). Load tokens.css first. Every rule is scoped
+ * to a chrome element, so a site's own stylesheet and this one cannot touch.
+ *
+ * The measurements are the main site's (markpitt.github.io, Tailwind): a 1024px frame with a
+ * 24px gutter, a 67px header (16px padding, a 34px control and the hairline), 14px nav text.
+ *
+ * Part of the site chrome kit (personal-brand designs/site-chrome/). Do not edit a copy.
+ */
+
+.mpc-top, .mpc-sub, .mpc-foot, .mpc-skip { --mpc-hairline: color-mix(in oklab, var(--ink) 10%, transparent); box-sizing: border-box; }
+.mpc-top *, .mpc-sub *, .mpc-foot * { box-sizing: border-box; }
+
+/* Skip link: off screen until it has keyboard focus, opaque so it reads over anything. */
+.mpc-skip { position: fixed; left: var(--space-4); top: -100px; z-index: 100; padding: var(--space-3) 20px; background: var(--surface-body); color: var(--accent-text); border: 2px solid var(--accent-text); border-radius: var(--radius-sm); font: var(--type-ui-label); text-decoration: none; transition: top 150ms ease; }
+.mpc-skip:focus { top: var(--space-4); }
+
+.mpc-top :focus-visible, .mpc-sub :focus-visible, .mpc-foot :focus-visible { outline: 2px solid var(--accent-mark); outline-offset: 2px; }
+
+/* Header. Translucent over a blur, with the hairline under it. */
+.mpc-top { top: 0; z-index: 50; background: color-mix(in oklab, var(--surface-body) 80%, transparent); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); border-bottom: 1px solid var(--mpc-hairline); font-family: var(--font-sans); }
+.mpc-top--sticky { position: sticky; }
+.mpc-top--fixed { position: fixed; left: 0; right: 0; }
+.mpc-top-inner { max-width: 1024px; margin: 0 auto; padding: var(--space-4) var(--space-6); display: flex; align-items: center; justify-content: space-between; }
+.mpc-lockup { display: inline-flex; align-items: center; gap: var(--space-2); color: var(--ink); text-decoration: none; }
+.mpc-mark, .mpc-wordmark { display: inline-flex; align-items: center; height: 20px; }
+.mpc-mark > svg, .mpc-wordmark > svg { height: 100%; width: auto; display: block; }
+.mpc-top-right { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-6); }
+
+.mpc-top .nav-menu { position: relative; }
+.mpc-top .nav-menu-links { display: none; flex-wrap: wrap; justify-content: flex-end; gap: var(--space-1) var(--space-6); margin: 0; padding: 0; list-style: none; font: 400 14px/20px var(--font-sans); }
+.mpc-top .nav-menu-links a { color: var(--muted); text-decoration: none; transition: color 150ms ease; }
+.mpc-top .nav-menu-links a:hover, .mpc-top .nav-menu-links a[aria-current] { color: var(--ink); }
+/* Open below the collapse width: a dropdown from the toggle that overlays the page. */
+.mpc-top .nav-menu[open] .nav-menu-links { display: flex; position: absolute; top: calc(100% + var(--space-2)); right: 0; flex-direction: column; align-items: flex-end; gap: var(--space-2); padding: var(--space-4) 20px; background: var(--surface-card); border: 1px solid var(--mpc-hairline); border-radius: var(--radius-md); box-shadow: 0 10px 30px -10px color-mix(in oklab, var(--ink) 30%, transparent); }
+
+/* The menu button and the theme control: a 20px icon in a 34px circle, 10px clear of the 24px
+ * target floor (WCAG 2.2 SC 2.5.8). */
+.mpc-top .nav-menu-toggle, .mpc-theme { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; padding: 0; border: 1px solid var(--mpc-hairline); border-radius: var(--radius-full); background: none; color: var(--muted); cursor: pointer; list-style: none; transition: color 150ms ease; }
+.mpc-top .nav-menu-toggle:hover, .mpc-theme:hover { color: var(--ink); }
+.mpc-top .nav-menu-toggle::marker, .mpc-top .nav-menu-toggle::-webkit-details-marker { display: none; }
+.mpc-top .nav-menu-toggle-icon, .mpc-theme-icon { height: 20px; }
+.mpc-top .nav-menu-toggle-icon > svg, .mpc-theme-icon > svg { height: 100%; width: auto; display: block; }
+.mpc-top .nav-menu-toggle-icon-close, .mpc-top .nav-menu[open] .nav-menu-toggle-icon-open { display: none; }
+.mpc-top .nav-menu[open] .nav-menu-toggle-icon-close { display: inline-flex; }
+.mpc-theme-icon { display: none; }
+.mpc-theme[data-theme-state="light"] .mpc-theme-light,
+.mpc-theme[data-theme-state="dark"] .mpc-theme-dark,
+.mpc-theme[data-theme-state="system"] .mpc-theme-system { display: inline-flex; }
+
+/* The collapse width: the narrowest viewport at which the nav's links fit in one row beside the
+ * lockup and the theme control, measured with the self-hosted fonts settled. Below it the links
+ * sit behind the menu button. Re-measure it whenever nav.ts gains, loses or renames an item.
+ * 724px, 27/11/2026, with Projects in the nav: one row from 720px on the main site's locked
+ * Playwright (1.62.1, chromium-1234) and from 724px on 1.63.0 (chromium-1243), so the worst case
+ * of the two. The main site's e2e tests pin the same number.
+ * The closed <details> hides its content through ::details-content, which display on a child
+ * cannot defeat, hence the content-visibility rule. */
+@media (min-width: 724px) {
+  .mpc-top .nav-menu-toggle { display: none; }
+  .mpc-top .nav-menu-links { display: flex !important; position: static; flex-direction: row; padding: 0; background: none; border: 0; box-shadow: none; }
+  .mpc-top .nav-menu::details-content { content-visibility: visible; }
+}
+
+/* Sub-bar: a project's own name and sections, under the shared header. */
+.mpc-sub { border-bottom: 1px solid var(--mpc-hairline); font-family: var(--font-sans); }
+.mpc-sub-inner { max-width: calc(1024px + 2 * var(--space-6)); margin: 0 auto; padding: var(--space-3) var(--space-6); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2) var(--space-6); }
+.mpc-product { font: 600 14px/20px var(--font-mono); color: var(--ink); text-decoration: none; }
+.mpc-sub nav { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-6); font: 400 14px/20px var(--font-sans); }
+.mpc-sub nav a { color: var(--muted); text-decoration: none; transition: color 150ms ease; }
+.mpc-sub nav a:hover, .mpc-sub nav a[aria-current] { color: var(--ink); }
+
+/* Footer: mono, 12px, muted, with the hairline above. */
+.mpc-foot { border-top: 1px solid var(--mpc-hairline); padding: var(--space-8) var(--space-6); font: 400 12px/16px var(--font-mono); color: var(--muted); }
+.mpc-foot-inner { max-width: 1024px; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-4); }
+.mpc-foot a { color: var(--muted); text-decoration: none; }
+.mpc-foot a:hover { color: var(--ink); text-decoration: underline; }
