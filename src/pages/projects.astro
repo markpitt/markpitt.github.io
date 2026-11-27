@@ -1,0 +1,74 @@
+---
+// markpitt.dev/projects/: a card for each public project with its own site. Driven by
+// src/data/projects.json, so adding a project is one entry there plus its own site in its twin.
+import Base from "../layouts/Base.astro";
+import Nav from "../components/Nav.astro";
+import Footer from "../components/Footer.astro";
+import SubBar from "@chrome/SubBar.astro";
+import projects from "../data/projects.json";
+---
+
+<Base
+  title="Projects: Mark Pitt"
+  description="Projects Mark Pitt has built and published, each with its own site and usage docs."
+>
+  <a href="#main" class="skip-link font-mono text-sm font-semibold tracking-widest uppercase"
+    >Skip to content</a
+  >
+  <Nav page="projects" />
+  <div class="pt-[67px]">
+    <SubBar
+      name="Projects"
+      href="/projects/"
+      label="Projects"
+      links={projects.map((p) => ({ href: p.path, label: p.name }))}
+    />
+  </div>
+  <main id="main" tabindex="-1">
+    <section class="px-6 pt-16 pb-24">
+      <div class="max-w-5xl mx-auto">
+        <h1 class="text-4xl sm:text-5xl font-bold tracking-tight mb-6">Projects</h1>
+        <p class="text-muted text-lg max-w-xl leading-relaxed mb-12">
+          Things I've built and published, each with its own site and docs. More join the list as they go
+          public.
+        </p>
+        <ul class="grid grid-cols-1 md:grid-cols-2 gap-5" data-projects>
+          {projects.map((project) => (
+            <li class="rounded-xl border border-ink/10 bg-surface-card overflow-hidden flex flex-col">
+              <a href={project.path} class="block border-b border-ink/10">
+                <img
+                  src={project.image}
+                  alt={project.imageAlt}
+                  width="1280"
+                  height="640"
+                  loading="lazy"
+                  decoding="async"
+                  class="block w-full h-auto"
+                />
+              </a>
+              <div class="p-6 flex flex-col flex-1">
+                <h2 class="font-semibold font-mono text-base mb-3">
+                  <a href={project.path} class="hover:text-accent transition-colors duration-150">{project.name}</a>
+                </h2>
+                <p class="text-muted text-sm leading-relaxed flex-1 mb-5">{project.summary}</p>
+                <div class="flex flex-wrap gap-2 mb-5">
+                  {project.tags.map((tag) => (
+                    <span class="text-xs text-muted font-mono bg-surface-pill px-2 py-0.5 rounded">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+                <p class="text-xs text-muted font-mono flex flex-wrap gap-x-4 gap-y-1">
+                  <a href={project.path} class="text-accent hover:underline">Site and docs</a>
+                  <a href={`https://github.com/${project.repo}`} class="hover:text-ink">{project.repo}</a>
+                  <span>{project.licence}</span>
+                </p>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  </main>
+  <Footer />
+</Base>

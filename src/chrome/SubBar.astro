@@ -1,0 +1,40 @@
+---
+// A project's own bar under the shared header: its name, then its own sections. Project names
+// are mono, as on the main site's Work cards.
+//
+// Part of the site chrome kit (personal-brand designs/site-chrome/). Do not edit a copy.
+
+export interface Link {
+  href: string;
+  label: string;
+  /** Marks the link as the current page. */
+  current?: boolean;
+}
+
+export interface Props {
+  /** The project's name, as it is written in its repository. */
+  name: string;
+  /** Where the name links: the project's own home page. */
+  href: string;
+  links: Link[];
+  /** The accessible name of the bar's nav. Defaults to the project name. */
+  label?: string;
+}
+
+const { name, href, links, label = name } = Astro.props;
+---
+
+<div class="mpc-sub">
+  <div class="mpc-sub-inner">
+    <a class="mpc-product" href={href}>{name}</a>
+    <nav aria-label={label}>
+      {
+        links.map((link) => (
+          <a href={link.href} aria-current={link.current ? 'page' : undefined}>
+            {link.label}
+          </a>
+        ))
+      }
+    </nav>
+  </div>
+</div>

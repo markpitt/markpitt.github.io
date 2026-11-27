@@ -1,0 +1,54 @@
+---
+// The theme control's script, for a project site's <head>. Blocking and inline, so the stored
+// theme is applied before the first paint. The same control as the main site: one origin, one
+// `theme` key in localStorage. Light and dark are stored; system is the key's absence, and
+// [data-theme] is then removed so tokens.css follows prefers-color-scheme. The cycle is
+// light, dark, system.
+//
+// Part of the site chrome kit (personal-brand designs/site-chrome/). Do not edit a copy.
+---
+
+<script is:inline>
+  (function () {
+    var KEY = 'theme';
+    var CYCLE = ['light', 'dark', 'system'];
+    var LABELS = { light: 'Light', dark: 'Dark', system: 'System' };
+    var root = document.documentElement;
+    function stored() {
+      try {
+        var value = localStorage.getItem(KEY);
+        return value === 'light' || value === 'dark' ? value : 'system';
+      } catch (error) {
+        return 'system';
+      }
+    }
+    function apply(choice) {
+      if (choice === 'system') root.removeAttribute('data-theme');
+      else root.setAttribute('data-theme', choice);
+    }
+    function next(choice) {
+      return CYCLE[(CYCLE.indexOf(choice) + 1) % CYCLE.length];
+    }
+    apply(stored());
+    document.addEventListener('DOMContentLoaded', function () {
+      var button = document.querySelector('[data-theme-toggle]');
+      if (!button) return;
+      function label(choice) {
+        button.setAttribute('data-theme-state', choice);
+        button.setAttribute('aria-label', 'Theme: ' + LABELS[choice] + '. Press for ' + LABELS[next(choice)] + '.');
+      }
+      button.addEventListener('click', function () {
+        // The button's own state, not storage, decides the next step, so the cycle still works
+        // when storage throws.
+        var choice = next(button.getAttribute('data-theme-state'));
+        try {
+          if (choice === 'system') localStorage.removeItem(KEY);
+          else localStorage.setItem(KEY, choice);
+        } catch (error) {}
+        apply(choice);
+        label(choice);
+      });
+      label(stored());
+    });
+  })();
+</script>

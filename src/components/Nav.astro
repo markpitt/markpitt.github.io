@@ -1,215 +1,25 @@
 ---
-import wordmark from '../assets/wordmark.svg?raw';
-import mark from '../assets/mark.svg?raw';
-import themeLight from '../assets/theme-light.svg?raw';
-import themeDark from '../assets/theme-dark.svg?raw';
-import themeSystem from '../assets/theme-system.svg?raw';
-import hamburger from '../assets/hamburger.svg?raw';
-import navClose from '../assets/nav-close.svg?raw';
+// The site header, from the shared markpitt.dev chrome kit (Header.astro, beside chrome.css).
+// The main site and every project site draw the same header from one kit, so the nav cannot
+// drift between them. `home=""` keeps Skills and Projects as site-relative links, `local` makes
+// the section links in-page anchors and the lockup plain text, and `fixed` keeps it over the hero,
+// which pads for it.
+//
+// The kit keeps the behaviour this component used to own, with its reasons in its comments:
+// the <details> menu with [open] as the only state, the 724px collapse width, the menu-closing
+// script (close on a link, Escape, focus leaving and a click outside), and the single cycling
+// theme button that Base.astro's script drives through data-theme-toggle.
+import Header from "@chrome/Header.astro";
+import type { SitePage } from "@chrome/nav";
+
+interface Props {
+  /** The nav item this page belongs to. None on the home page. */
+  page?: SitePage;
+}
+
+const { page } = Astro.props;
+// On the home page the section links are in-page anchors; on any other page they lead back to it.
+const local = page === undefined;
 ---
 
-<nav class="fixed top-0 inset-x-0 z-50 backdrop-blur-sm bg-surface/80 border-b border-ink/10">
-  <div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-    <!--
-      #34, criterion 1/2. wordmark.svg is inlined (set:html), not referenced by <img>: the
-      fill value on its path inherits colour from context, and an <img>-referenced SVG is an
-      isolated document where that inheritance resolves against the file's own starting value
-      rather than the host page, so it would render black in both themes. Inlining lets the
-      wrapper's text-ink set the CSS colour the fill inherits, giving both modes for free with
-      no per-mode class (criterion 3). It also keeps the asset's own <title> element in the
-      accessibility tree, which an <img> would instead expose only via a separately-written alt
-      attribute, so the accessible name comes from the asset itself rather than being restated
-      here (criterion 2). Height-constrained rather than width-constrained per criterion 4's own
-      reasoning: the nav is text-sm and the viewBox is ~4.79:1, so a fixed height keeps it
-      inside the bar's existing padding at every breakpoint without touching the theme control
-      beside it.
-
-      #37, criterion 5. mark.svg is inlined the same way and for the same "one styled unit"
-      reason, even though its fill values are fixed brand colours: it deliberately does not
-      inherit from context the way the wordmark's path does (criterion 4a: the mark must not
-      invert). The two SVGs share this flex wrapper rather than the nav's own row, so their
-      gap-2 stays smaller than the row's own gap-x-6 to the links/theme group regardless of
-      viewport (criterion 1b).
-
-      #37, criterion 2. The wordmark asset's own accessible-name element (see its #34 comment
-      above) is already the nav's sole one; mark.svg carries no such element of its own
-      (design's asset, confirmed), and aria-hidden="true" on its wrapper is the second, separate
-      requirement the spec calls the belt to that asset's braces: omitting the element alone is
-      not sufficient on its own.
-    -->
-    <span class="inline-flex items-center gap-2">
-      <span aria-hidden="true" class="inline-flex items-center h-5 [&>svg]:h-full [&>svg]:w-auto" set:html={mark} />
-      <span class="inline-flex items-center h-5 text-ink [&>svg]:h-full [&>svg]:w-auto" set:html={wordmark} />
-    </span>
-    <div class="flex flex-wrap items-center gap-x-6 gap-y-1">
-      <!--
-        #44, criteria 2/3/5/8. `<details>`/`<summary>`, native `[open]` as the single source of
-        truth for the disclosure state -- still true even after decision 3 below: no
-        aria-expanded (details/summary already exposes expanded/collapsed to assistive technology
-        without it, and a hardcoded attribute would go stale on the very first toggle).
-
-        Decision 3 (docs/specs/hamburger-nav.md) was SUPERSEDED 17/08/2026: `<details>` cannot
-        close itself when a link inside it is activated, so Mark chose a second scripted
-        exception to the no-client-JS rule rather than leave the menu open over the section just
-        navigated to. data-nav-menu below exists for exactly one consumer, the closing script at
-        the foot of this file -- named rather than dropped, unlike the first draft of this
-        comment, because that script is now the stated reason for it.
-
-        Three hooks, one element each, so a mismatch with design's CSS fails as "class not
-        found" rather than a silent no-op:
-          .nav-menu        the <details> itself. Every rule that positions the disclosure panel
-                            (criterion 8, overlay not push) lives in design's global.css against
-                            this class, not here -- no position/inset utilities added in this
-                            markup, the styling rule plus the review ruling on #44.
-          .nav-menu-toggle  the <summary>. Marker removal (list-style, -webkit-details-marker),
-                            the tap-target affordance, and the visible/hidden state of the
-                            hamburger itself are both design's: this class does double duty,
-                            styled one way below the collapse width (visible disclosure trigger)
-                            and hidden entirely at/above it, since criterion 2 requires the nav
-                            above 586px to stay exactly as it was, hamburger included.
-          .nav-menu-links   the <ul>. Hidden below 586px unless [open], forced to render
-                            regardless of [open] at/above it -- the fix for the resize trap
-                            (open the menu narrow, widen past the breakpoint, links must not
-                            disappear) -- both directions are design's media query.
-
-        Icon: design chose a state-swapped pair (docs/design/hamburger-nav.md, `4cb5207`/
-        `b654141`) mirroring #43's own swap rather than one icon plus a script-set transform --
-        hamburger.svg and nav-close.svg both stay in the DOM, design's CSS shows exactly one via
-        .nav-menu[open] targeting .nav-menu-toggle-icon-open/-close off the native [open]
-        attribute alone, nothing script-set to keep in sync, same shape as #43's
-        group-data-[theme-state=...] but keyed off a native attribute rather than one this file
-        writes. No `group` class on <details>: design's selectors key off .nav-menu[open]
-        directly rather than Tailwind's group-open: variant, so it would be dead weight left
-        over from before design's CSS landed.
-      -->
-      <details class="nav-menu" data-nav-menu>
-        <summary class="nav-menu-toggle" aria-label="Menu">
-          <span
-            aria-hidden="true"
-            class="nav-menu-toggle-icon nav-menu-toggle-icon-open"
-            set:html={hamburger}
-          />
-          <span
-            aria-hidden="true"
-            class="nav-menu-toggle-icon nav-menu-toggle-icon-close"
-            set:html={navClose}
-          />
-        </summary>
-        <ul class="nav-menu-links flex flex-wrap gap-x-6 gap-y-1 text-sm text-muted justify-end">
-          <li><a href="#about" class="hover:text-ink transition-colors duration-150">About</a></li>
-          <li><a href="#expertise" class="hover:text-ink transition-colors duration-150">Expertise</a></li>
-          <li><a href="#work" class="hover:text-ink transition-colors duration-150">Work</a></li>
-          <li><a href="#experience" class="hover:text-ink transition-colors duration-150">Experience</a></li>
-          <li><a href="#contact" class="hover:text-ink transition-colors duration-150">Contact</a></li>
-          <li><a href="/claude-skills/" class="hover:text-ink transition-colors duration-150">Skills</a></li>
-        </ul>
-      </details>
-      <!--
-        #43. Single cycling icon button, replacing the three-way group #26 built. Per
-        docs/design/theme-icon-button.md: state is carried entirely by which icon is showing,
-        no ring, fill or accent anywhere on this control. That's a deliberate removal, not an
-        oversight: a single button has no unpressed sibling to distinguish itself from, so the
-        #26 fill-inversion problem (docs/specs/rebrand.md) has nothing left to reintroduce
-        itself through. Icon colour is the same text-muted/hover:text-ink pair every nav link
-        already uses, clearing the applicable 3:1 non-text floor by the same wide margin those
-        already clear 4.5:1 by.
-
-        All three icons are inlined (set:html, same #34/#37 reasoning) and stay in the DOM the
-        whole time; group-data-[theme-state=...] shows the one matching the button's own
-        data-theme-state, set by Base.astro's script on load and on every click. Each is
-        aria-hidden and title-free (belt-and-braces, #37); the button's own aria-label (set in
-        Base.astro, see its #43 comment) is the nav's sole accessible name for this control.
-
-        Sizing: h-5 (20px) icon inside p-1.5 (6px) padding = 32x32px content-and-padding box,
-        design's own figure. The border (border-ink/10) adds 1px each side on top of that,
-        so the border-box a hit-target check actually measures (getBoundingClientRect,
-        Playwright's boundingBox()) is 34x34px, 10px clear of the WCAG 2.2 SC 2.5.8 24px floor
-        in every direction (criterion 4/8b's tap-target limb). Naming both because the two
-        differ and only one is what an assertion sees: measure this control's box before
-        assuming which figure any future check against it used.
-
-        Named by transition, per docs/specs/nav-lockup.md's own convention, never
-        upper/lower (that pair inverts depending on whether you order by pixel value or by row
-        count, and this fleet drifted off the convention independently in two places before
-        catching it). The 3-row to 2-row transition (528px) does not move with this control's
-        own width, and that is not a coincidence to leave unexplained: below 528px the nav
-        links themselves wrap onto a second internal line before this button ever shares a row
-        with them (confirmed by reading the links row's own top-position count, separately
-        from this button's), so 528px is purely a function of the links' width, never this
-        button's. The button only enters the layout at the 2-row to 1-row transition (586px,
-        was 716px pre-#43), the point where the links row and this button can first share one
-        row -- which is exactly why that number, and only that number, moved with this
-        control's width.
-      -->
-      <button
-        type="button"
-        data-theme-toggle
-        data-theme-state="system"
-        aria-label="Theme: System. Press for Light."
-        class="group inline-flex items-center justify-center rounded-full border border-ink/10 p-1.5 text-muted hover:text-ink transition-colors duration-150"
-      >
-        <span
-          aria-hidden="true"
-          class="hidden h-5 group-data-[theme-state=light]:block [&>svg]:h-full [&>svg]:w-auto"
-          set:html={themeLight}
-        />
-        <span
-          aria-hidden="true"
-          class="hidden h-5 group-data-[theme-state=dark]:block [&>svg]:h-full [&>svg]:w-auto"
-          set:html={themeDark}
-        />
-        <span
-          aria-hidden="true"
-          class="hidden h-5 group-data-[theme-state=system]:block [&>svg]:h-full [&>svg]:w-auto"
-          set:html={themeSystem}
-        />
-      </button>
-    </div>
-  </div>
-</nav>
-
-<script>
-  // #44, decision 3 SUPERSEDED (docs/specs/hamburger-nav.md): closes the menu when a link
-  // inside it is activated, which <details> cannot do on its own.
-  //
-  // Fence widened 18/11/2026 at Mark's request (accessibility audit S3,
-  // docs/plans/2026-11-18-accessibility-audit.md in the monorepo). The menu now also closes on
-  // Escape, when focus leaves it, and on a click outside it, so an open menu can no longer sit
-  // over the links a keyboard user has just tabbed to. Escape is the only path that moves
-  // focus, and only back to the toggle, so focus is never stranded inside a closed panel. Still
-  // out of scope: a focus trap, ARIA syncing (nothing here sets aria-expanded, see the comment
-  // on <details> above), animation control and persisted open state.
-  //
-  // Not is:inline in <head> and not blocking, unlike #43's theme script: that one has to run
-  // before first paint or the wrong theme flashes, this one only reacts to user input, so an
-  // ordinary Astro component script (deferred, module, runs once the DOM it queries exists)
-  // is the correct non-blocking form and copying #43's pattern here would be wrong.
-  //
-  // Additive, not load-bearing: with this script absent or failed, <details> still opens and
-  // closes on its own native semantics and every link stays reachable, criteria 4 and 5 hold
-  // either way. This only improves what happens after a tap, a key press or a focus move.
-  const menu = document.querySelector<HTMLDetailsElement>("[data-nav-menu]");
-  if (menu) {
-    const close = () => menu.removeAttribute("open");
-
-    menu.querySelectorAll("a").forEach((link) => {
-      link.addEventListener("click", close);
-    });
-
-    menu.addEventListener("keydown", (event) => {
-      if (event.key !== "Escape" || !menu.open) return;
-      close();
-      menu.querySelector("summary")?.focus();
-    });
-
-    menu.addEventListener("focusout", (event) => {
-      const next = event.relatedTarget;
-      if (menu.open && next instanceof Node && !menu.contains(next)) close();
-    });
-
-    document.addEventListener("click", (event) => {
-      const target = event.target;
-      if (menu.open && target instanceof Node && !menu.contains(target)) close();
-    });
-  }
-</script>
+<Header home="" local={local} current={page} position="fixed" />

@@ -46,3 +46,6 @@ agents/**/__pycache__/
 # playwright
 test-results/
 playwright-report/
+
+# the chrome kit, copied in at release; the monorepo keeps the one shared copy
+src/chrome/

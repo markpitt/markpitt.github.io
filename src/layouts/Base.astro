@@ -1,5 +1,7 @@
 ---
 import '../styles/global.css';
+// The shared chrome's stylesheet, unlayered so Tailwind's preflight cannot reach the header.
+import '@chrome/chrome.css';
 // #41. Self-hosts Inter and JetBrains Mono instead of loading them from
 // fonts.googleapis.com/fonts.gstatic.com. Astro 7.2.2 also ships a built-in Fonts API
 // (`fonts` in astro.config.mjs, verified top-level and not experimental at

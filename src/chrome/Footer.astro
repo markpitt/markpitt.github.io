@@ -1,0 +1,33 @@
+---
+// The markpitt.dev footer: the name on the left, the site's licence and repository on the right.
+// Pass your own right-hand text as the default slot to replace the licence line.
+//
+// Part of the site chrome kit (personal-brand designs/site-chrome/). Do not edit a copy.
+import { SITE_HOME } from './nav';
+
+export interface Props {
+  /** The main site's origin. */
+  home?: string;
+  /** True on the main site's own pages: the name is plain text, not a link home. */
+  local?: boolean;
+  /** SPDX licence id, such as MIT or Apache-2.0. */
+  licence?: string;
+  /** owner/name on GitHub. */
+  repo?: string;
+}
+
+const { home = SITE_HOME, local = false, licence, repo } = Astro.props;
+---
+
+<footer class="mpc-foot">
+  <div class="mpc-foot-inner">
+    {local ? <span>Mark Pitt</span> : <a href={`${home}/`}>Mark Pitt</a>}
+    <span>
+      <slot>
+        {licence}
+        {licence && repo && ' · '}
+        {repo && <a href={`https://github.com/${repo}`}>{repo}</a>}
+      </slot>
+    </span>
+  </div>
+</footer>
