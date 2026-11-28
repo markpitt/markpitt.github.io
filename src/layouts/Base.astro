@@ -41,11 +41,15 @@ import '@fontsource/jetbrains-mono/latin-600.css';
 interface Props {
   title?: string;
   description?: string;
+  /** The 404 page: served at every address that has nothing else, so it carries no canonical
+   * URL of its own and asks search engines not to index it. docs/specs/not-found.md. */
+  notFound?: boolean;
 }
 
 const {
   title = 'Mark Pitt',
   description = 'Senior .NET and AI systems engineer based in Bridgnorth, Shropshire, UK.',
+  notFound = false,
 } = Astro.props;
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site).toString();
@@ -217,7 +221,7 @@ const person = {
     <meta name="description" content={description} />
     <link rel="icon" href="/favicon.ico" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="canonical" href={canonicalURL} />
+    {notFound ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonicalURL} />}
     <!--
       #41. This file used to carry a rel="preconnect" pair for fonts.googleapis.com and
       fonts.gstatic.com plus a rel="stylesheet" link to Google's css2 endpoint here. Both are
