@@ -1,0 +1,96 @@
+---
+// markpitt.dev's "page not found" page. Astro writes it to dist/404.html, which GitHub Pages
+// serves, with a 404 status, at every address under markpitt.dev that has nothing behind it.
+// docs/specs/not-found.md has the criteria; the design is personal-brand designs/ (screen
+// not-found, stylesheet styles/not-found.css, shipped verbatim as src/styles/not-found.css).
+//
+// It is served at arbitrary depths (/a/b/c/), so every link and asset here is root-relative.
+import Base from "../layouts/Base.astro";
+import Nav from "../components/Nav.astro";
+import Footer from "../components/Footer.astro";
+import { SITE_SECTIONS, SITE_PAGES } from "@chrome/nav";
+import projects from "../data/projects.json";
+import "../styles/not-found.css";
+
+// Every address the "closest match" may suggest. The home page's sections are also listed as
+// /about/ and so on, because that is what someone typing an address tends to try.
+const routes = [
+  { key: "/", href: "/", label: "Home" },
+  ...SITE_SECTIONS.map(([id, label]) => ({ key: `/${id}/`, href: `/#${id}`, label })),
+  ...SITE_PAGES.map(([, path, label]) => ({ key: path, href: path, label })),
+  ...projects.map((p) => ({ key: p.path, href: p.path, label: p.name })),
+];
+
+// The routes back, always shown, with or without the script.
+const ways = [
+  { href: "/", path: "/", label: "Home", desc: "My background, what I work on and how I work." },
+  { href: "/projects/", path: "/projects/", label: "Projects", desc: "Things I've built and published, each with its own docs." },
+  { href: "/claude-skills/", path: "/claude-skills/", label: "Skills", desc: "The Claude Skills I use, grouped by topic." },
+  { href: "/#contact", path: "/#contact", label: "Contact", desc: "Email or LinkedIn, if you'd rather ask." },
+];
+---
+
+<Base
+  title="Page not found: Mark Pitt"
+  description="There is nothing at this address on markpitt.dev."
+  notFound
+>
+  <a href="#main" class="skip-link font-mono text-sm font-semibold tracking-widest uppercase"
+    >Skip to content</a
+  >
+  <Nav away />
+  <div class="pt-[67px]"></div>
+  <main id="main" tabindex="-1" class="nf" data-nf data-nf-routes={JSON.stringify(routes)}>
+    <div class="nf-inner">
+      <p class="nf-code" aria-hidden="true">
+        4<span class="nf-zero"
+          ><svg viewBox="0 0 460 460" focusable="false"
+            ><clipPath id="nf-crop"><circle cx="230" cy="230" r="230"></circle></clipPath><g clip-path="url(#nf-crop)"
+              ><rect class="nf-disc" width="460" height="460"></rect><circle
+                class="nf-pupil"
+                cx="230"
+                cy="230"
+                r="145"></circle></g
+            ></svg
+          ></span
+        >4
+      </p>
+      <h1 class="nf-title">Page not found</h1>
+      <p class="nf-lede">
+        There's nothing at <span data-nf-where>this address</span>. Either the link is out of date or the
+        address has a typo in it, and from here I can't tell which.
+      </p>
+      <div class="nf-term" data-nf-term hidden>
+        <p class="nf-cmd"><span class="nf-prompt" aria-hidden="true">$</span>curl -sI https://markpitt.dev<span data-nf-term-path></span></p>
+        <p><span class="nf-status">HTTP/2 404</span></p>
+      </div>
+      <p class="nf-suggest" data-nf-suggest hidden>
+        Closest match I have: <a data-nf-suggest-link href="/">/</a> (<span data-nf-suggest-label>Home</span>)
+      </p>
+      <h2 class="nf-routes-title">Try one of these</h2>
+      <ul class="nf-routes" data-nf-routes-list>
+        {
+          ways.map((w) => (
+            <li class="nf-route">
+              <a href={w.href}>{w.label}</a>
+              <span class="nf-route-path">{w.path}</span>
+              <span class="nf-route-desc">{w.desc}</span>
+            </li>
+          ))
+        }
+      </ul>
+      <p class="nf-report">
+        If a link on this site sent you here, that's my bug, not yours. <a
+          data-nf-report
+          href="mailto:mark@markpitt.dev?subject=Broken%20link%20on%20markpitt.dev">Email me the address</a
+        > and I'll fix it.
+      </p>
+    </div>
+  </main>
+  <Footer away />
+</Base>
+
+<script>
+  import { run } from "../scripts/not-found";
+  run(document, window.location);
+</script>

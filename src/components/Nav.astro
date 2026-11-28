@@ -15,11 +15,13 @@ import type { SitePage } from "@chrome/nav";
 interface Props {
   /** The nav item this page belongs to. None on the home page. */
   page?: SitePage;
+  /** True on a page away from home with no nav item of its own: the 404 page. */
+  away?: boolean;
 }
 
-const { page } = Astro.props;
+const { page, away = false } = Astro.props;
 // On the home page the section links are in-page anchors; on any other page they lead back to it.
-const local = page === undefined;
+const local = page === undefined && !away;
 ---
 
 <Header home="" local={local} current={page} position="fixed" />

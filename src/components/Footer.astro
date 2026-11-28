@@ -2,6 +2,13 @@
 // The site footer, from the shared markpitt.dev chrome kit. On the main site the name is plain
 // text and the right-hand side says what the site is built with.
 import Footer from "@chrome/Footer.astro";
+
+interface Props {
+  /** True on the 404 page, which is served at every address: the name links home there. */
+  away?: boolean;
+}
+
+const { away = false } = Astro.props;
 ---
 
-<Footer local>Built with Astro &amp; Tailwind CSS</Footer>
+<Footer home="" local={!away}>Built with Astro &amp; Tailwind CSS</Footer>
